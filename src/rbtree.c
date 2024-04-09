@@ -243,6 +243,62 @@ void rb_transplant(rbtree *t, node_t *u, node_t *v) {
     return;
 }
 
+void rb_delete_fixup(rbtree *t, node_t *x) {
+    node_t *w;
+    while ((x != t->root) && (x->color == RBTREE_BLACK)) {
+        if (x == x->parent->left) {
+            w = x->parent->right;
+            if (w->color == RBTREE_RED) {
+                w->color = RBTREE_BLACK;
+                x->parent->color = RBTREE_RED;
+                left_rotate(t, x->parent);
+                w = x->parent->right;
+            }
+            if (w->left->color == RBTREE_BLACK && w->right->color == RBTREE_BLACK) {
+                w->color = RBTREE_RED;
+                x = x->parent;
+            } else {
+                if (w->right->color == RBTREE_BLACK) {
+                    w->left->color = RBTREE_BLACK;
+                    w->color = RBTREE_RED;
+                    right_rotate(t, w);
+                    w = x->parent->right;
+                }
+                w->color = x->parent->color;
+                x->parent->color = RBTREE_BLACK;
+                w->right->color = RBTREE_BLACK;
+                left_rotate(t, x->parent);
+                x = t->root;
+            }
+        } else {
+            w = x->parent->left;
+            if (w->color == RBTREE_RED) {
+                w->color = RBTREE_BLACK;
+                x->parent->color = RBTREE_RED;
+                right_rotate(t, x->parent);
+                w = x->parent->left;
+            }
+            if (w->right->color == RBTREE_BLACK && w->left->color == RBTREE_BLACK) {
+                w->color = RBTREE_RED;
+                x = x->parent;
+            } else {
+                if (w->left->color == RBTREE_BLACK) {
+                    w->right->color = RBTREE_BLACK;
+                    w->color = RBTREE_RED;
+                    left_rotate(t, w);
+                    w = x->parent->left;
+                }
+                w->color = x->parent->color;
+                x->parent->color = RBTREE_BLACK;
+                w->left->color = RBTREE_BLACK;
+                right_rotate(t, x->parent);
+                x = t->root;
+            }
+        }
+    }
+    x->color = RBTREE_BLACK;
+}
+
 int rbtree_erase(rbtree *t, node_t *z) {
     // TODO: implement erase
 //    node_t *delete_node;
@@ -280,6 +336,7 @@ int rbtree_erase(rbtree *t, node_t *z) {
 
     if (y_original_color == RBTREE_BLACK) {
         //TODO : 더블리 블랙
+        rb_delete_fixup(t, z);
     }
     free(z);
     return 0;
@@ -291,7 +348,7 @@ int inorder_rbtree(node_t *root, key_t *res, const rbtree *t, int index) {
     }
     index = inorder_rbtree(root->left, res, t, index);
     res[index] = root->key;
-    printf("inorder index : %d \n", res[index]);
+//    printf("inorder index : %d \n", res[index]);
     index += 1;
     index = inorder_rbtree(root->right, res, t, index);
     return index;
