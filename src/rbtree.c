@@ -336,7 +336,7 @@ int rbtree_erase(rbtree *t, node_t *z) {
 
     if (y_original_color == RBTREE_BLACK) {
         //TODO : 더블리 블랙
-        rb_delete_fixup(t, z);
+        rb_delete_fixup(t, x);
     }
     free(z);
     return 0;
